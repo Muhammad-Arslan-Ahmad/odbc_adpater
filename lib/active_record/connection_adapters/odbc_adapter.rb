@@ -1,5 +1,5 @@
 require 'active_record'
-require 'arel/visitors/bind_visitor'
+# require 'arel/visitors/bind_visitor'
 require 'odbc'
 require 'odbc_utf8'
 
@@ -53,13 +53,17 @@ module ActiveRecord
       # e.g. "DSN=virt5;UID=rails;PWD=rails"
       #      "DRIVER={OpenLink Virtuoso};HOST=carlmbp;UID=rails;PWD=rails"
       def odbc_conn_str_connection(config)
-        attrs = config[:conn_str].split(';').map { |option| option.split('=', 2) }.to_h
+        # attrs = config[:conn_str].split(';').map { |option| option.split('=', 2) }.to_h
+        attrs = 'DRIVER={SQL_DRIVER};SERVER=localhost;PORT=3306;DATABASE=odbc_dev;UID=root;PWD=abc123;ENCODING=utf8'.split(';').map { |option| option.split('=', 2) }.to_h
         odbc_module = attrs['ENCODING'] == 'utf8' ? ODBC_UTF8 : ODBC
         driver = odbc_module::Driver.new
         driver.name = 'odbc'
         driver.attrs = attrs
-
+        binding.pry
         connection = odbc_module::Database.new.drvconnect(driver)
+        conn = ODBC::Database.new.drvconnect(driver)
+        i = conn.get_info(ODBC::SQL_DBMS_NAME)
+        puts i.encoding
         # encoding_bug indicates that the driver is using non ASCII and has the issue referenced here https://github.com/larskanis/ruby-odbc/issues/2
         [connection, config.merge(driver: driver, encoding: attrs['ENCODING'], encoding_bug: attrs['ENCODING'] == 'utf8')]
       end
@@ -137,8 +141,8 @@ module ActiveRecord
       # Build a new column object from the given options. Effectively the same
       # as super except that it also passes in the native type.
       # rubocop:disable Metrics/ParameterLists
-      def new_column(name, default, sql_type_metadata, null, table_name, default_function = nil, collation = nil, native_type = nil)
-        ::ODBCAdapter::Column.new(name, default, sql_type_metadata, null, table_name, default_function, collation, native_type)
+      def new_column(name, default, sql_type_metadata, null, default_function = nil)
+        ::ODBCAdapter::Column.new(name, default, sql_type_metadata, null, default_function)
       end
 
       protected

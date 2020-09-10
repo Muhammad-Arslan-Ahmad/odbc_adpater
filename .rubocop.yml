@@ -8,6 +8,14 @@ AllCops:
 Lint/AmbiguousBlockAssociation:
   Enabled: false
 
+Lint/Debugger:
+  Enabled: false
+
+Lint/UnneededDisable:
+  Enabled: false
+
+Lint/Style/UnneededInterpolation:
+  Enabled: false
 Metrics/AbcSize:
   Enabled: false
 
